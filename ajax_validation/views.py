@@ -7,6 +7,9 @@ from ajax_validation.utils import LazyEncoder
 
 def validate(request, *args, **kwargs):
     form_class = kwargs.pop('form_class')
+    save_if_valid = kwargs.pop('save_if_valid', False)
+    save = kwargs.pop('save', lambda f: {})
+
     defaults = {
         'data': request.POST
     }
@@ -14,10 +17,18 @@ def validate(request, *args, **kwargs):
     kwargs = extra_args_func(request, *args, **kwargs)
     defaults.update(kwargs)
     form = form_class(**defaults)
-    if form.is_valid():
-        data = {
-            'valid': True,
+
+    data = {
+        'was_saved': save_if_valid,
         }
+
+    if form.is_valid():
+        data.update({
+                'valid': True,
+                })
+        if save_if_valid:
+            data.update(save(request, form))
+
     else:
         # if we're dealing with a FormSet then walk over .forms to populate errors and formfields
         if isinstance(form, BaseFormSet):
@@ -47,10 +58,10 @@ def validate(request, *args, **kwargs):
                 html_id = formfields[key].field.widget.attrs.get('id') or formfields[key].auto_id
                 html_id = formfields[key].field.widget.id_for_label(html_id)
                 final_errors[html_id] = val
-        data = {
-            'valid': False or not final_errors,
-            'errors': final_errors,
-        }
+        data.update({
+                'valid': False or not final_errors,
+                'errors': final_errors,
+                })
     json_serializer = LazyEncoder()
     return HttpResponse(json_serializer.encode(data), mimetype='application/json')
 validate = require_POST(validate)

@@ -63,3 +63,55 @@ If you want to use ``django-ajax-validation`` with ``django-uniform`` there is
 an extra included handler that works with it.  To use it simply include the
 ``jquery-uni-form.js`` file in your template and pass
 ``callback: uniform_callback`` to ``jQuery.validate``.
+
+
+
+Using ``ajax-validation`` ModelValidationView classes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you'd like to use ``ajax-validation`` with models and ModelForm's
+check the ModelValidationView class. Here's how it work's:
+
+
+In your views.py file ::
+
+   from myapp.models import Car
+   from myapp.forms import SpecialCarForm
+   from ajax_validation import site as ajax_validation_site
+
+
+   ajax_validation_site.register(Car)
+
+   # or:
+
+   class CarValidationView(ModelValidationView):
+       form_class = SpecialCarForm
+   ajax_validation_site.register(Car, CarValidationView)
+
+
+
+And then in your main urls.py file ::
+   import ajax_validation
+   ajax_validation.autodiscover()
+
+
+   urlpatterns = patterns(
+       '',
+       # ...
+
+       (r'^validate/', include(validation.site.urls)),
+
+       # ....
+   )
+
+
+The ajax_validation site creates urls and urls-names for you::
+   url  : r'^app_name/model_name/(<optional_object_pk>)?'
+   name : 'validate-app_name-model_name'
+
+
+so for the car example we have ::
+   url  : r'^myapp/car/'    # for creating new Car object
+          r'^myapp/car/1'   # for edit existing Car object with id = 1
+
+   name : 'validate-myapp-car'

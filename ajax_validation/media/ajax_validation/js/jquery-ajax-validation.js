@@ -3,6 +3,24 @@
         return form.find(":input:visible:not(:button)");
     }
 
+    var errorRemover = {
+	p: function(form){
+	    form.find('ul.errorlist').remove();
+	},
+	table: function(form){
+	    inputs(form).prev('ul.errorlist').remove();
+            form.find('tr:has(ul.errorlist)').remove();
+	},
+	ul: function(form){
+            inputs(form).prev().prev('ul.errorlist').remove();
+            form.find('li:has(ul.errorlist)').remove();
+	},
+    };
+
+    function removeErrors(form, form_type){
+	return errorRemover[form_type](form);
+    }
+
     $.fn.validate = function(url, settings) {
         settings = $.extend({
             type: 'table',
@@ -17,6 +35,7 @@
             var form = $(this);
             settings.dom.bind(settings.event, function()  {
                 var status = false;
+		var responseData = {};
                 var data = form.serialize();
                 if (settings.fields) {
                     data += '&' + $.param({fields: settings.fields});
@@ -30,7 +49,9 @@
                         status = true;
                     },
                     success: function(data, textStatus) {
+			responseData = data;
                         status = data.valid;
+			removeErrors(form, settings.type)
                         if (!status)    {
                             if (settings.callback)  {
                                 settings.callback(data, form);
@@ -46,7 +67,6 @@
                                     return inputs(form).filter(filter).parent();
                                 };
                                 if (settings.type == 'p')    {
-                                    form.find('ul.errorlist').remove();
                                     $.each(data.errors, function(key, val)  {
                                         if (key.indexOf('__all__') >= 0)   {
                                             var error = get_form_error_position(key);
@@ -63,8 +83,6 @@
                                     });
                                 }
                                 if (settings.type == 'table')   {
-                                    inputs(form).prev('ul.errorlist').remove();
-                                    form.find('tr:has(ul.errorlist)').remove();
                                     $.each(data.errors, function(key, val)  {
                                         if (key.indexOf('__all__') >= 0)   {
                                             get_form_error_position(key).parent().before('<tr><td colspan="2"><ul class="errorlist"><li>' + val + '.</li></ul></td></tr>');
@@ -75,8 +93,6 @@
                                     });
                                 }
                                 if (settings.type == 'ul')  {
-                                    inputs(form).prev().prev('ul.errorlist').remove();
-                                    form.find('li:has(ul.errorlist)').remove();
                                     $.each(data.errors, function(key, val)  {
                                         if (key.indexOf('__all__') >= 0)   {
                                             get_form_error_position(key).before('<li><ul class="errorlist"><li>' + val + '</li></ul></li>');
@@ -93,7 +109,7 @@
                     url: url
                 });
                 if (status && settings.submitHandler) {
-                    return settings.submitHandler.apply(this);
+                    return settings.submitHandler(this, responseData);
                 }
                 return status;
             });
