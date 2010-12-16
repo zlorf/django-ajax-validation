@@ -21,6 +21,57 @@
 	return errorRemover[form_type](form);
     }
 
+
+    function get_form_error_position(form, key) {
+        key = key || '__all__';
+        if (key == '__all__') {
+            var filter = ':first';
+        } else {
+            var filter = ':first[id^=id_' + key.replace('__all__', '') + ']';
+        }
+        return inputs(form).filter(filter).parent();
+    };
+
+    var errorInjector = {
+	p: function(form, data) {
+            $.each(data.errors, function(key, val) {
+                if (key.indexOf('__all__') >= 0) {
+                    var error = get_form_error_position(form, key);
+                    if (error.prev().is('ul.errorlist')) {
+                        error.prev().before('<ul class="errorlist"><li>' + val + '</li></ul>');
+                    } else {
+                        error.before('<ul class="errorlist"><li>' + val + '</li></ul>');
+                    }
+                } else {
+                    $('#' + key, form).parent().before('<ul class="errorlist"><li>' + val + '</li></ul>');
+                }
+            });
+        },
+	table: function(form, data) {
+            $.each(data.errors, function(key, val) {
+                if (key.indexOf('__all__') >= 0) {
+                    get_form_error_position(form, key).parent().before('<tr><td colspan="2"><ul class="errorlist"><li>' + val + '</li></ul></td></tr>');
+                } else {
+                    $('#' + key, form).before('<ul class="errorlist"><li>' + val + '</li></ul>');
+                }
+            });
+        },
+	ul: function(form, data)  {
+            $.each(data.errors, function(key, val) {
+                if (key.indexOf('__all__') >= 0) {
+                    get_form_error_position(form, key).before('<li><ul class="errorlist"><li>' + val + '</li></ul></li>');
+                } else {
+                    $('#' + key, form).prev().before('<ul class="errorlist"><li>' + val + '</li></ul>');
+                }
+            });
+        },
+    };
+
+    function injectErrors(type, form, data){
+	errorInjector[type](form, data);
+    }
+
+
     $.fn.validate = function(url, settings) {
         settings = $.extend({
             type: 'table',
@@ -55,53 +106,8 @@
                         if (!status)    {
                             if (settings.callback)  {
                                 settings.callback(data, form);
-                            }
-                            else    {
-                                var get_form_error_position = function(key) {
-                                    key = key || '__all__';
-                                    if (key == '__all__') {
-                                        var filter = ':first';
-                                    } else {
-                                        var filter = ':first[id^=id_' + key.replace('__all__', '') + ']';
-                                    }
-                                    return inputs(form).filter(filter).parent();
-                                };
-                                if (settings.type == 'p')    {
-                                    $.each(data.errors, function(key, val)  {
-                                        if (key.indexOf('__all__') >= 0)   {
-                                            var error = get_form_error_position(key);
-                                            if (error.prev().is('ul.errorlist')) {
-                                                error.prev().before('<ul class="errorlist"><li>' + val + '</li></ul>');
-                                            }
-                                            else    {
-                                                error.before('<ul class="errorlist"><li>' + val + '</li></ul>');
-                                            }
-                                        }
-                                        else    {
-                                            $('#' + key).parent().before('<ul class="errorlist"><li>' + val + '</li></ul>');
-                                        }
-                                    });
-                                }
-                                if (settings.type == 'table')   {
-                                    $.each(data.errors, function(key, val)  {
-                                        if (key.indexOf('__all__') >= 0)   {
-                                            get_form_error_position(key).parent().before('<tr><td colspan="2"><ul class="errorlist"><li>' + val + '.</li></ul></td></tr>');
-                                        }
-                                        else    {
-                                            $('#' + key).before('<ul class="errorlist"><li>' + val + '</li></ul>');
-                                        }
-                                    });
-                                }
-                                if (settings.type == 'ul')  {
-                                    $.each(data.errors, function(key, val)  {
-                                        if (key.indexOf('__all__') >= 0)   {
-                                            get_form_error_position(key).before('<li><ul class="errorlist"><li>' + val + '</li></ul></li>');
-                                        }
-                                        else    {
-                                            $('#' + key).prev().before('<ul class="errorlist"><li>' + val + '</li></ul>');
-                                        }
-                                    });
-                                }
+                            } else {
+				injectErrors(settings.type, form, data);
                             }
                         }
                     },
@@ -109,7 +115,7 @@
                     url: url
                 });
                 if (status && settings.submitHandler) {
-                    return settings.submitHandler(this, responseData);
+                    return settings.submitHandler(form, responseData);
                 }
                 return status;
             });

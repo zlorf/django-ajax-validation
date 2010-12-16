@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-from ajax_validation.views import validate
-from ajax_validation.options import ModelValidationView
+from ajax_validation.views import ModelValidationView
 from ajax_validation.sites import ValidationSite, site
 
 
