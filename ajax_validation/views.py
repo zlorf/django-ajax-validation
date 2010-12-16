@@ -73,10 +73,9 @@ class ModelValidationView(object):
     def get_instance(self, request, *args, **kwargs):
         object_pk = kwargs.get('object_pk', None)
         model = self.get_model()
-        instance = model()
         if object_pk:
             instance = get_object_or_404(model, pk=object_pk)
-        return instance
+        return model()
 
 
     def get_form_kwargs(self, request, *args, **kwargs):
@@ -91,8 +90,7 @@ class ModelValidationView(object):
 
     def get_form_error_and_formfields(self, form):
         """
-        Returns form errors and formfields. Taking into
-        account formsets.
+        Returns form errors and formfields. Taking formsets into account.
         """
         # if we're dealing with a FormSet then walk over .forms to populate errors and formfields
         if isinstance(form, BaseFormSet):
@@ -134,9 +132,9 @@ class ModelValidationView(object):
             raise ImproperlyConfigured('form_class param have to be provided.')
 
         save_if_valid = kwargs.pop('save_if_valid', self.save_if_valid)
-        save_fun = self.save if save_if_valid else lambda f: {}
+        save_fun = self.save if save_if_valid else lambda r, f: {}
 
-        form = form_class(self.get_form_kwargs(request, *args, **kwargs))
+        form = form_class(**self.get_form_kwargs(request, *args, **kwargs))
         data = {}
 
         if form.is_valid():
