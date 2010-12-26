@@ -2,11 +2,11 @@ from setuptools import setup, find_packages
 
 setup(
     name='django-ajax-validation',
-    version='0.1.5',
-    description='Provides support for doing validation using Ajax(currently with jQuery) using your existing Django forms.',
-    author='Alex Gaynor',
-    author_email='alex.gaynor@gmail.com',
-    url='http://github.com/alex/django-ajax-validation/tree/master',
+    version='0.1.6',
+    description='This is fork of original Alex Gaynor\'s django-ajax-validation.',
+    author='Kuba Janoszek',
+    author_email='kuba.janoszek@gmail.com',
+    url='http://github.com/jqb/django-ajax-validation/tree/master',
     packages=find_packages(),
     classifiers=[
         'Development Status :: 3 - Alpha',
@@ -24,4 +24,4 @@ setup(
     # it can find the data files under Git version control.
     setup_requires=['setuptools_git'],
     zip_safe=False,
-)
+    )
