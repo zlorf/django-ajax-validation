@@ -4,21 +4,21 @@
     }
 
     var errorRemover = {
-	p: function(form){
-	    form.find('ul.errorlist').remove();
-	},
-	table: function(form){
-	    inputs(form).prev('ul.errorlist').remove();
+    p: function(form){
+        form.find('ul.errorlist').remove();
+    },
+    table: function(form){
+        inputs(form).prev('ul.errorlist').remove();
             form.find('tr:has(ul.errorlist)').remove();
-	},
-	ul: function(form){
+    },
+    ul: function(form){
             inputs(form).prev().prev('ul.errorlist').remove();
             form.find('li:has(ul.errorlist)').remove();
-	},
+    },
     };
 
     function removeErrors(form, form_type){
-	return errorRemover[form_type](form);
+    return errorRemover[form_type](form);
     }
 
 
@@ -33,7 +33,7 @@
     };
 
     var errorInjector = {
-	p: function(form, data) {
+    p: function(form, data) {
             $.each(data.errors, function(key, val) {
                 if (key.indexOf('__all__') >= 0) {
                     var error = get_form_error_position(form, key);
@@ -47,7 +47,7 @@
                 }
             });
         },
-	table: function(form, data) {
+    table: function(form, data) {
             $.each(data.errors, function(key, val) {
                 if (key.indexOf('__all__') >= 0) {
                     get_form_error_position(form, key).parent().before('<tr><td colspan="2"><ul class="errorlist"><li>' + val + '</li></ul></td></tr>');
@@ -56,7 +56,7 @@
                 }
             });
         },
-	ul: function(form, data)  {
+    ul: function(form, data)  {
             $.each(data.errors, function(key, val) {
                 if (key.indexOf('__all__') >= 0) {
                     get_form_error_position(form, key).before('<li><ul class="errorlist"><li>' + val + '</li></ul></li>');
@@ -68,7 +68,7 @@
     };
 
     function injectErrors(type, form, data){
-	errorInjector[type](form, data);
+    errorInjector[type](form, data);
     }
 
 
@@ -86,7 +86,7 @@
             var form = $(this);
             settings.dom.bind(settings.event, function()  {
                 var status = false;
-		var responseData = {};
+                var responseData = {};
                 var data = form.serialize();
                 if (settings.fields) {
                     data += '&' + $.param({fields: settings.fields});
@@ -100,14 +100,14 @@
                         status = true;
                     },
                     success: function(data, textStatus) {
-			responseData = data;
+                        responseData = data;
                         status = data.valid;
-			removeErrors(form, settings.type)
+                        removeErrors(form, settings.type)
                         if (!status)    {
                             if (settings.callback)  {
                                 settings.callback(data, form);
                             } else {
-				injectErrors(settings.type, form, data);
+                                injectErrors(settings.type, form, data);
                             }
                         }
                     },
@@ -122,3 +122,4 @@
         });
     };
 })(jQuery);
+
