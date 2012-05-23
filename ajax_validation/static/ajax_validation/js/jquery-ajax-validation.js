@@ -4,21 +4,34 @@
     }
 
     var errorRemover = {
-    p: function(form){
-        form.find('ul.errorlist').remove();
+    p: function(form, fields){
+        get_form_error_position(form, '__all__').prev('ul.errorlist').remove();
+        if (!fields)
+            form.find('ul.errorlist').remove();
+        else
+            fields.closest('p').prev('ul.errorlist').remove();
     },
-    table: function(form){
-        inputs(form).prev('ul.errorlist').remove();
-            form.find('tr:has(ul.errorlist)').remove();
+    table: function(form, fields){
+        form.find('tr:has(ul.errorlist):not(:has(label))').remove();
+        if (!fields)
+            inputs(form).prev('ul.errorlist').remove();
+        else
+            fields.prev('ul.errorlist').remove();
+
     },
-    ul: function(form){
+    ul: function(form, fields){
+        form.find('li:has(ul.errorlist):not(:has(label))').remove();
+        if (!fields)
             inputs(form).prev().prev('ul.errorlist').remove();
-            form.find('li:has(ul.errorlist)').remove();
+        else
+            fields.prev().prev('ul.errorlist').remove();
     },
     };
 
-    function removeErrors(form, form_type){
-    return errorRemover[form_type](form);
+    function removeErrors(form, form_type, fields){
+        if (fields)
+            fields = $(fields.map(function(n){ return '*[name="'+n+'"]'; }).join(', '));
+       return errorRemover[form_type](form, fields);
     }
 
 
@@ -102,7 +115,7 @@
                     success: function(data, textStatus) {
                         responseData = data;
                         status = data.valid;
-                        removeErrors(form, settings.type)
+                        removeErrors(form, settings.type, settings.fields);
                         if (!status)    {
                             if (settings.callback)  {
                                 settings.callback(data, form);
